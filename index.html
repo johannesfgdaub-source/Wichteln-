@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Wichteln">
+<title>Wichtel-Auslosung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: eine schmale Spalte wie ein Geschenkanhänger-Stapel, Organisator oben, Aufdeck-Ansicht als eigener Anhänger */
+:root{
+  --bg:#eef2ee; --surface:#ffffff; --ink:#15231b; --muted:#4f6157; --line:#d3dcd5;
+  --fir:#1d5a3c; --fir-ink:#ffffff; --berry:#b0243a; --tag:#f7f1e4;
+  --display:"Young Serif", Georgia, "Times New Roman", serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1612; --surface:#16211b; --ink:#e7eee9; --muted:#9fb2a6; --line:#2a3a31;
+  --fir:#5cc08b; --fir-ink:#0b1510; --berry:#ff6f80; --tag:#22302a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1612; --surface:#16211b; --ink:#e7eee9; --muted:#9fb2a6; --line:#2a3a31;
+  --fir:#5cc08b; --fir-ink:#0b1510; --berry:#ff6f80; --tag:#22302a; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 48px}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:2rem;line-height:1.15}
+h2{font-size:1.25rem}
+.lead{color:var(--muted);margin:6px 0 0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.step{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--berry);font-weight:700}
+label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.9rem}
+input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:70px}
+input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--fir);outline-offset:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.grid2{grid-template-columns:1fr}}
+.hint{font-size:.85rem;color:var(--muted);margin:0}
+.people{display:flex;flex-direction:column;gap:8px}
+.prow{display:grid;grid-template-columns:1fr 7.5rem 2.6rem;gap:8px;align-items:center}
+.phead{font-size:.8rem;font-weight:600;color:var(--muted)}
+button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.primary{background:var(--fir);color:var(--fir-ink);border-color:var(--fir);padding:13px 18px;font-size:1.05rem}
+.del{padding:8px;color:var(--berry)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.msg{margin:0;font-weight:600;color:var(--berry)}
+.msg.ok{color:var(--fir)}
+.result{display:flex;flex-direction:column;gap:8px}
+.ritem{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.ritem strong{min-width:0;overflow-wrap:anywhere}
+.ex{font-size:.75rem;font-weight:700;color:var(--berry);border:1px solid var(--berry);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle}
+#fallback{font-family:ui-monospace,Menlo,monospace;font-size:.8rem}
+
+/* Aufdeck-Ansicht */
+.tag{position:relative;background:var(--tag);border:1px solid var(--line);border-radius:16px 16px 16px 16px;padding:40px 22px 26px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.tag::before{content:"";position:absolute;top:14px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--bg);border:2px solid var(--line)}
+.tag .event{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--berry);font-weight:700}
+.target{font-family:var(--display);font-size:clamp(2.2rem,9vw,3.4rem);line-height:1.1;color:var(--fir);overflow-wrap:anywhere}
+.facts{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.facts b{color:var(--ink)}
+.note{max-width:46ch;white-space:pre-wrap;color:var(--ink);margin:0}
+@media (prefers-reduced-motion:no-preference){.target.pop{animation:pop .5s ease-out}@keyframes pop{from{transform:scale(.85);opacity:.3}to{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+  <!-- Aufdeck-Ansicht für Teilnehmer -->
+  <section id="reveal" hidden>
+    <div class="tag">
+      <div class="event" id="rEvent"></div>
+      <h1 id="rHello"></h1>
+      <p class="lead" id="rLead">Tippe auf den Knopf, um zu sehen, wen du beschenkst. Nur du siehst das.</p>
+      <button class="primary" id="rBtn" type="button">Aufdecken</button>
+      <div id="rBox" hidden>
+        <p class="hint">Du beschenkst</p>
+        <div class="target" id="rTarget"></div>
+      </div>
+      <div class="facts" id="rFacts"></div>
+      <p class="note" id="rNote"></p>
+    </div>
+    <p class="hint" style="text-align:center">Pssst. Nicht verraten.</p>
+  </section>
+
+  <!-- Organisator-Ansicht -->
+  <div id="organizer" class="wrap" style="max-width:none">
+    <header>
+      <h1>Wichtel-Auslosung</h1>
+      <p class="lead">Teilnehmer eintragen, auslosen, jedem seinen persönlichen Link schicken. Du selbst siehst nicht, wer wen zieht.</p>
+    </header>
+
+    <section class="panel">
+      <span class="step">Schritt 1 · Wichtelrunde</span>
+      <label for="evName">Name der Runde
+        <input id="evName" type="text" placeholder="z. B. Familienwichteln 2026">
+      </label>
+      <div class="grid2">
+        <label for="evBudget">Budget
+          <input id="evBudget" type="text" placeholder="z. B. 20 €">
+        </label>
+        <label for="evDate">Bescherung am
+          <input id="evDate" type="date">
+        </label>
+      </div>
+      <label for="evMsg">Nachricht an alle (optional)
+        <textarea id="evMsg" placeholder="z. B. Geschenke bitte bis 23.12. einpacken."></textarea>
+      </label>
+    </section>
+
+    <section class="panel">
+      <span class="step">Schritt 2 · Teilnehmer</span>
+      <p class="hint">Gleiche Gruppe heißt: Diese Personen ziehen sich nicht gegenseitig, z. B. Paare. Feld leer lassen, wenn egal.</p>
+      <div class="prow phead"><span>Name</span><span>Gruppe</span><span></span></div>
+      <div class="people" id="people"></div>
+      <div class="row"><button type="button" id="addBtn">+ Person hinzufügen</button></div>
+    </section>
+
+
+    <button class="primary" type="button" id="drawBtn">Auslosen</button>
+    <p class="msg" id="drawMsg" hidden></p>
+
+    <section class="panel" id="resultPanel" hidden>
+      <span class="step">Schritt 3 · Links verschicken</span>
+      <p class="hint">Jeder Link zeigt nur dieser Person ihr Ergebnis. Nach erneutem Auslosen nur die neuen Links verschicken.</p>
+      <div class="result" id="result"></div>
+      <textarea id="fallback" readonly hidden aria-label="Text zum Kopieren"></textarea>
+    </section>
+
+    <section class="panel">
+      <span class="step">Code statt Link</span>
+      <p class="hint">Falls ein Link nicht aufgeht: Code aus der Nachricht hier einfügen.</p>
+      <div class="row">
+        <input id="codeIn" type="text" placeholder="w1.…" style="flex:1 1 220px">
+        <button type="button" id="codeBtn">Öffnen</button>
+      </div>
+      <p class="msg" id="codeMsg" hidden></p>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  var KEY = "wichtel-geheim-2026";
+  var $ = function(id){ return document.getElementById(id); };
+
+  // ---------- Kodierung ----------
+  function enc(obj){
+    var bytes = new TextEncoder().encode(JSON.stringify(obj));
+    for (var i=0;i<bytes.length;i++) bytes[i] ^= KEY.charCodeAt(i % KEY.length);
+    var s = ""; for (var j=0;j<bytes.length;j++) s += String.fromCharCode(bytes[j]);
+    return "w1." + btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+  function dec(tok){
+    tok = (tok||"").trim().replace(/^#/,"");
+    var p = tok.indexOf("#"); if (p >= 0) tok = tok.slice(p+1);
+    if (tok.indexOf("w1.") !== 0) return null;
+    try{
+      var b = tok.slice(3).replace(/-/g,"+").replace(/_/g,"/");
+      while (b.length % 4) b += "=";
+      var s = atob(b), bytes = new Uint8Array(s.length);
+      for (var i=0;i<s.length;i++) bytes[i] = s.charCodeAt(i) ^ KEY.charCodeAt(i % KEY.length);
+      var o = JSON.parse(new TextDecoder().decode(bytes));
+      return (o && o.g && o.t) ? o : null;
+    }catch(e){ return null; }
+  }
+
+  // ---------- Speicher ----------
+  var STORE = "wichtel-state-v1";
+  function load(){ try{ return JSON.parse(localStorage.getItem(STORE)||"null"); }catch(e){ return null; } }
+  function save(){
+    try{ localStorage.setItem(STORE, JSON.stringify(collect())); }catch(e){}
+  }
+
+  // ---------- Teilnehmer ----------
+  var rowId = 0;
+  function addRow(name, group){
+    rowId++;
+    var div = document.createElement("div");
+    div.className = "prow";
+    div.innerHTML =
+      '<input type="text" id="pn'+rowId+'" aria-label="Name" placeholder="Name">' +
+      '<input type="text" id="pg'+rowId+'" aria-label="Gruppe" placeholder="—">' +
+      '<button type="button" class="del" aria-label="Person entfernen">✕</button>';
+    div.children[0].value = name || "";
+    div.children[1].value = group || "";
+    div.children[2].addEventListener("click", function(){ div.remove(); save(); });
+    $("people").appendChild(div);
+    return div;
+  }
+  function collect(){
+    var ppl = [];
+    document.querySelectorAll("#people .prow").forEach(function(r){
+      ppl.push({ n: r.children[0].value.trim(), gr: r.children[1].value.trim() });
+    });
+    return { event:$("evName").value, budget:$("evBudget").value, date:$("evDate").value,
+             msg:$("evMsg").value, people:ppl };
+  }
+
+  // ---------- Auslosung ----------
+  function shuffle(a){ for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function draw(ppl){
+    var n = ppl.length, used = new Array(n).fill(false), res = new Array(n);
+    var order = shuffle(ppl.map(function(_,i){ return i; }));
+    var steps = 0;
+    function ok(g,t){
+      if (g === t) return false;
+      var a = ppl[g].gr.toLowerCase(), b = ppl[t].gr.toLowerCase();
+      return !(a && a === b);
+    }
+    function go(k){
+      if (++steps > 200000) return false;
+      if (k === n) return true;
+      var g = order[k];
+      var cands = shuffle(ppl.map(function(_,i){ return i; }));
+      for (var c=0;c<cands.length;c++){
+        var t = cands[c];
+        if (!used[t] && ok(g,t)){ used[t]=true; res[g]=t; if (go(k+1)) return true; used[t]=false; }
+      }
+      return false;
+    }
+    return go(0) ? res : null;
+  }
+
+  function showMsg(el, text, good){ el.textContent = text; el.className = good ? "msg ok" : "msg"; el.hidden = false; }
+
+  function fmtDate(d){
+    if (!d) return "";
+    var p = d.split("-"); return p.length === 3 ? (p[2]+"."+p[1]+"."+p[0]) : d;
+  }
+
+  function copyText(text, btn){
+    var done = function(){ var o = btn.textContent; btn.textContent = "Kopiert"; setTimeout(function(){ btn.textContent = o; }, 1500); };
+    var fb = function(){ var t = $("fallback"); t.hidden = false; t.value = text; t.focus(); t.select(); btn.textContent = "Text unten markiert"; };
+    try{
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fb);
+      else fb();
+    }catch(e){ fb(); }
+  }
+
+  $("drawBtn").addEventListener("click", function(){
+    var st = collect(), msgEl = $("drawMsg");
+    var ppl = st.people.filter(function(p){ return p.n; });
+    if (ppl.length < 3){ showMsg(msgEl, "Mindestens drei Personen eintragen."); return; }
+    var seen = {};
+    for (var i=0;i<ppl.length;i++){
+      var k = ppl[i].n.toLowerCase();
+      if (seen[k]){ showMsg(msgEl, "„"+ppl[i].n+"“ steht doppelt in der Liste. Namen eindeutig machen, z. B. mit Initial."); return; }
+      seen[k] = true;
+    }
+    var res = draw(ppl);
+    if (!res){ showMsg(msgEl, "Keine Auslosung möglich. Eine Gruppe ist zu groß. Gruppen verkleinern oder mehr Personen eintragen."); return; }
+
+    var base = location.href.split("#")[0];
+    var ev = st.event.trim() || "Wichteln";
+    var list = $("result"); list.innerHTML = "";
+    ppl.forEach(function(p, g){
+      var tok = enc({ e:ev, b:st.budget.trim(), d:st.date, m:st.msg.trim(), g:p.n, t:ppl[res[g]].n });
+      var link = base ? base + "#" + tok : "";
+      var text = "Hallo " + p.n + "! Dein persönlicher Wichtel-Link für „" + ev + "“:\n" +
+                 link +
+                 "\n\nFalls der Link nicht aufgeht, diesen Code auf der Seite unter „Code statt Link“ eingeben:\n" + tok;
+      var item = document.createElement("div");
+      item.className = "ritem";
+      var nm = document.createElement("strong"); nm.textContent = p.n;
+      var acts = document.createElement("div"); acts.className = "row";
+      var cBtn = document.createElement("button"); cBtn.type = "button"; cBtn.textContent = "Nachricht kopieren";
+      cBtn.addEventListener("click", function(){ copyText(text, cBtn); });
+      var wa = document.createElement("a"); wa.className = "btn"; wa.textContent = "WhatsApp";
+      wa.href = "https://wa.me/?text=" + encodeURIComponent(text); wa.target = "_blank"; wa.rel = "noopener";
+      acts.appendChild(cBtn); acts.appendChild(wa);
+      item.appendChild(nm); item.appendChild(acts);
+      list.appendChild(item);
+    });
+    $("resultPanel").hidden = false;
+    showMsg(msgEl, "Ausgelost. Jetzt jedem seine Nachricht schicken.", true);
+    save();
+  });
+
+  // ---------- Aufdecken ----------
+  function showReveal(o){
+    $("organizer").hidden = true; $("reveal").hidden = false;
+    $("rEvent").textContent = o.e || "Wichteln";
+    $("rHello").textContent = "Hallo " + o.g + "!";
+    $("rTarget").textContent = o.t;
+    var f = $("rFacts"); f.innerHTML = "";
+    if (o.b){ var s1 = document.createElement("span"); s1.innerHTML = "Budget: <b></b>"; s1.querySelector("b").textContent = o.b; f.appendChild(s1); }
+    if (o.d){ var s2 = document.createElement("span"); s2.innerHTML = "Bescherung: <b></b>"; s2.querySelector("b").textContent = fmtDate(o.d); f.appendChild(s2); }
+    $("rNote").textContent = o.m || "";
+    $("rBox").hidden = true; $("rBtn").hidden = false; $("rLead").hidden = false;
+    window.scrollTo(0,0);
+  }
+  $("rBtn").addEventListener("click", function(){
+    $("rBtn").hidden = true; $("rLead").hidden = true; $("rBox").hidden = false;
+    var t = $("rTarget"); t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop");
+  });
+  $("codeBtn").addEventListener("click", function(){
+    var o = dec($("codeIn").value);
+    if (o) showReveal(o); else showMsg($("codeMsg"), "Code nicht erkannt. Den ganzen Code ab „w1.“ einfügen.");
+  });
+
+  // ---------- Start ----------
+  function boot(){
+    var o = dec(location.hash);
+    if (o){ showReveal(o); return; }
+    var st = load();
+    if (st && st.people && st.people.length){
+      $("evName").value = st.event||""; $("evBudget").value = st.budget||""; $("evDate").value = st.date||"";
+      $("evMsg").value = st.msg||"";
+      st.people.forEach(function(p){ addRow(p.n, p.gr); });
+    } else {
+      // Beispielrunde, zum Überschreiben
+      $("evName").value = "Familienwichteln 2026";
+      $("evBudget").value = "25 €";
+      $("evDate").value = "2026-12-24";
+      [["Anna","A"],["Ben","A"],["Clara",""],["David","B"],["Emma","B"],["Felix",""]].forEach(function(p){ addRow(p[0], p[1]); });
+      var h = document.querySelector("#organizer .step");
+      var ex = document.createElement("span"); ex.className = "ex"; ex.textContent = "Beispiel";
+      h.appendChild(ex);
+    }
+  }
+  $("addBtn").addEventListener("click", function(){ var r = addRow("",""); r.children[0].focus(); save(); });
+  document.addEventListener("input", function(e){ if (e.target.closest && e.target.closest("#organizer")) save(); });
+  window.addEventListener("hashchange", function(){ var o = dec(location.hash); if (o) showReveal(o); });
+  boot();
+})();
+</script>
+
+</body>
+</html>
