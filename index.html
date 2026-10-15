@@ -24,6 +24,7 @@
   --fir:#5cc08b; --fir-ink:#0b1510; --berry:#ff6f80; --tag:#22302a; color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
   padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 48px}
 .wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
@@ -34,15 +35,32 @@ h2{font-size:1.25rem}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
 .step{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--berry);font-weight:700}
 label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.9rem}
-input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+input,select{height:46px;display:block}
+input,textarea,select{font-size:1rem;font-weight:400}
+/* iPad/iPhone: Datumsfeld exakt so breit und hoch wie die anderen Felder */
+input[type="date"]{-webkit-appearance:none;appearance:none;text-align:left;line-height:24px}
+input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type="date"]::-webkit-calendar-picker-indicator{margin:0}
+select{-webkit-appearance:none;appearance:none;padding-right:30px;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
 textarea{resize:vertical;min-height:70px}
 input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--fir);outline-offset:2px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:480px){.grid2{grid-template-columns:1fr}}
 .hint{font-size:.85rem;color:var(--muted);margin:0}
 .people{display:flex;flex-direction:column;gap:8px}
-.prow{display:grid;grid-template-columns:1fr 7.5rem 2.6rem;gap:8px;align-items:center}
-.phead{font-size:.8rem;font-weight:600;color:var(--muted)}
+.people{gap:12px}
+.pcard{display:grid;grid-template-columns:1fr 6.5rem 2.6rem;grid-template-areas:"n g d" "m m m" "w w w";gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.pcard .pn{grid-area:n}.pcard .pg{grid-area:g}.pcard .del{grid-area:d;height:46px}.pcard .pm{grid-area:m}.pcard .pw{grid-area:w;min-height:56px}
+.pcard label{font-size:.75rem;font-weight:600;color:var(--muted);gap:2px}
+.wishes{margin:0;padding-left:1.2em;text-align:left}
+.wishes li{margin:2px 0}
+.who{width:100%;text-align:left;border-top:1px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.who h2{font-size:1.05rem}
+.check{display:flex;flex-direction:row;align-items:center;gap:8px;font-weight:500;font-size:1rem}
+.check input{width:20px;height:20px;padding:0;flex:none}
+.inline{display:flex;gap:8px}
+.inline > input{flex:1 1 auto}
 button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .primary{background:var(--fir);color:var(--fir-ink);border-color:var(--fir);padding:13px 18px;font-size:1.05rem}
 .del{padding:8px;color:var(--berry)}
@@ -78,12 +96,27 @@ button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cu
       <h1 id="rHello"></h1>
       <p class="lead" id="rLead">Tippe auf den Knopf, um zu sehen, wen du beschenkst. Nur du siehst das.</p>
       <button class="primary" id="rBtn" type="button">Aufdecken</button>
-      <div id="rBox" hidden>
+      <div id="rBox" hidden style="width:100%;display:flex;flex-direction:column;gap:12px;align-items:center">
         <p class="hint">Du beschenkst</p>
         <div class="target" id="rTarget"></div>
+        <div class="who" id="rWishBox" hidden>
+          <h2>Wunschliste</h2>
+          <div id="rWishes"></div>
+        </div>
+        <div class="who">
+          <h2>Meine Geschenkeliste</h2>
+          <p class="hint">Ideen notieren und abhaken. Bleibt nur auf deinem Gerät gespeichert.</p>
+          <div id="gList" style="display:flex;flex-direction:column;gap:6px"></div>
+          <div class="inline">
+            <input id="gIn" type="text" placeholder="z. B. Buch, Schal …" aria-label="Geschenkidee">
+            <button type="button" id="gAdd">+</button>
+          </div>
+        </div>
       </div>
       <div class="facts" id="rFacts"></div>
       <p class="note" id="rNote"></p>
+      <p class="hint" id="rInfo"></p>
+      <p class="hint" id="rAll"></p>
     </div>
     <p class="hint" style="text-align:center">Pssst. Nicht verraten.</p>
   </section>
@@ -108,6 +141,13 @@ button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cu
           <input id="evDate" type="date">
         </label>
       </div>
+      <label for="evCount">Geschenke pro Person
+        <select id="evCount">
+          <option value="1">1 Geschenk</option>
+          <option value="2">2 Geschenke</option>
+          <option value="3">3 Geschenke</option>
+        </select>
+      </label>
       <label for="evMsg">Nachricht an alle (optional)
         <textarea id="evMsg" placeholder="z. B. Geschenke bitte bis 23.12. einpacken."></textarea>
       </label>
@@ -115,8 +155,8 @@ button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cu
 
     <section class="panel">
       <span class="step">Schritt 2 · Teilnehmer</span>
-      <p class="hint">Gleiche Gruppe heißt: Diese Personen ziehen sich nicht gegenseitig, z. B. Paare. Feld leer lassen, wenn egal.</p>
-      <div class="prow phead"><span>Name</span><span>Gruppe</span><span></span></div>
+      <p class="hint">Partner oder Paare bekommen dieselbe Nummer, z. B. beide „1“. Sie ziehen sich dann nicht gegenseitig, alle anderen schon. Feld leer lassen, wenn egal.</p>
+      <p class="hint">Wünsche: einen Wunsch pro Zeile. Der Schenkende sieht sie nach dem Aufdecken. E-Mail nur, wenn du per Mail verschicken willst.</p>
       <div class="people" id="people"></div>
       <div class="row"><button type="button" id="addBtn">+ Person hinzufügen</button></div>
     </section>
@@ -179,39 +219,47 @@ button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cu
 
   // ---------- Teilnehmer ----------
   var rowId = 0;
-  function addRow(name, group){
+  function addRow(p){
+    p = p || {};
     rowId++;
     var div = document.createElement("div");
-    div.className = "prow";
+    div.className = "pcard";
     div.innerHTML =
-      '<input type="text" id="pn'+rowId+'" aria-label="Name" placeholder="Name">' +
-      '<input type="text" id="pg'+rowId+'" aria-label="Gruppe" placeholder="—">' +
-      '<button type="button" class="del" aria-label="Person entfernen">✕</button>';
-    div.children[0].value = name || "";
-    div.children[1].value = group || "";
-    div.children[2].addEventListener("click", function(){ div.remove(); save(); });
+      '<label class="pn">Name<input type="text" aria-label="Name" placeholder="Name"></label>' +
+      '<label class="pg">Partner-Nr.<input type="text" aria-label="Partner-Nummer" placeholder="—"></label>' +
+      '<button type="button" class="del" aria-label="Person entfernen" style="align-self:end">✕</button>' +
+      '<label class="pm">E-Mail (optional)<input type="email" aria-label="E-Mail" placeholder="name@mail.de" autocapitalize="off"></label>' +
+      '<label class="pw">Wünsche (optional)<textarea aria-label="Wünsche" placeholder="Ein Wunsch pro Zeile"></textarea></label>';
+    var f = div.querySelectorAll("input,textarea");
+    f[0].value = p.n || ""; f[1].value = p.gr || ""; f[2].value = p.em || ""; f[3].value = p.w || "";
+    div.querySelector(".del").addEventListener("click", function(){ div.remove(); save(); });
     $("people").appendChild(div);
     return div;
   }
   function collect(){
     var ppl = [];
-    document.querySelectorAll("#people .prow").forEach(function(r){
-      ppl.push({ n: r.children[0].value.trim(), gr: r.children[1].value.trim() });
+    document.querySelectorAll("#people .pcard").forEach(function(r){
+      var f = r.querySelectorAll("input,textarea");
+      ppl.push({ n:f[0].value.trim(), gr:f[1].value.trim(), em:f[2].value.trim(), w:f[3].value.trim() });
     });
     return { event:$("evName").value, budget:$("evBudget").value, date:$("evDate").value,
-             msg:$("evMsg").value, people:ppl };
+             count:$("evCount").value, msg:$("evMsg").value, people:ppl };
   }
 
   // ---------- Auslosung ----------
+  // Jede Runde ist eine Zuordnung, in der jeder genau einmal gibt und einmal bekommt.
+  // Gesperrt: sich selbst, gleiche Partner-Nr., schon in einer früheren Runde gezogen.
   function shuffle(a){ for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-  function draw(ppl){
+  function drawRound(ppl, prev){
     var n = ppl.length, used = new Array(n).fill(false), res = new Array(n);
     var order = shuffle(ppl.map(function(_,i){ return i; }));
     var steps = 0;
     function ok(g,t){
       if (g === t) return false;
       var a = ppl[g].gr.toLowerCase(), b = ppl[t].gr.toLowerCase();
-      return !(a && a === b);
+      if (a && a === b) return false;
+      for (var r=0;r<prev.length;r++) if (prev[r][g] === t) return false;
+      return true;
     }
     function go(k){
       if (++steps > 200000) return false;
@@ -225,6 +273,18 @@ button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cu
       return false;
     }
     return go(0) ? res : null;
+  }
+  function draw(ppl, count){
+    for (var attempt=0; attempt<40; attempt++){
+      var rounds = [], fail = false;
+      for (var r=0; r<count; r++){
+        var res = drawRound(ppl, rounds);
+        if (!res){ fail = true; break; }
+        rounds.push(res);
+      }
+      if (!fail) return ppl.map(function(_,g){ return rounds.map(function(rd){ return rd[g]; }); });
+    }
+    return null;
   }
 
   function showMsg(el, text, good){ el.textContent = text; el.className = good ? "msg ok" : "msg"; el.hidden = false; }
@@ -243,37 +303,57 @@ button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cu
     }catch(e){ fb(); }
   }
 
+  function joinNames(arr){
+    if (arr.length <= 1) return arr.join("");
+    return arr.slice(0,-1).join(", ") + " und " + arr[arr.length-1];
+  }
+  function splitWishes(w){ return (w||"").split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean); }
+
   $("drawBtn").addEventListener("click", function(){
     var st = collect(), msgEl = $("drawMsg");
     var ppl = st.people.filter(function(p){ return p.n; });
+    var count = parseInt(st.count, 10) || 1;
     if (ppl.length < 3){ showMsg(msgEl, "Mindestens drei Personen eintragen."); return; }
     var seen = {};
     for (var i=0;i<ppl.length;i++){
       var k = ppl[i].n.toLowerCase();
       if (seen[k]){ showMsg(msgEl, "„"+ppl[i].n+"“ steht doppelt in der Liste. Namen eindeutig machen, z. B. mit Initial."); return; }
       seen[k] = true;
+      if (ppl[i].em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ppl[i].em)){ showMsg(msgEl, "E-Mail von „"+ppl[i].n+"“ prüfen."); return; }
     }
-    var res = draw(ppl);
-    if (!res){ showMsg(msgEl, "Keine Auslosung möglich. Eine Gruppe ist zu groß. Gruppen verkleinern oder mehr Personen eintragen."); return; }
+    if (count >= ppl.length - 1){ showMsg(msgEl, "Zu viele Geschenke pro Person für so wenige Teilnehmer."); return; }
+    var res = draw(ppl, count);
+    if (!res){ showMsg(msgEl, "Keine Auslosung möglich. Zu viele Personen mit derselben Partner-Nr. oder zu viele Geschenke pro Person."); return; }
 
     var base = location.href.split("#")[0];
     var ev = st.event.trim() || "Wichteln";
+    var all = ppl.map(function(p){ return p.n; });
     var list = $("result"); list.innerHTML = "";
     ppl.forEach(function(p, g){
-      var tok = enc({ e:ev, b:st.budget.trim(), d:st.date, m:st.msg.trim(), g:p.n, t:ppl[res[g]].n });
-      var link = base ? base + "#" + tok : "";
-      var text = "Hallo " + p.n + "! Dein persönlicher Wichtel-Link für „" + ev + "“:\n" +
-                 link +
+      var targets = res[g].map(function(t){ return ppl[t]; });
+      var tok = enc({ e:ev, b:st.budget.trim(), d:st.date, m:st.msg.trim(), g:p.n,
+                      t:targets.map(function(x){ return x.n; }),
+                      w:targets.map(function(x){ return splitWishes(x.w); }),
+                      a:all });
+      var link = base + "#" + tok;
+      var text = "Hallo " + p.n + "! Dein persönlicher Wichtel-Link für „" + ev + "“:\n" + link +
+                 "\n\nNur du siehst, wen du beschenkst. Dabei sind: " + joinNames(all) + "." +
                  "\n\nFalls der Link nicht aufgeht, diesen Code auf der Seite unter „Code statt Link“ eingeben:\n" + tok;
       var item = document.createElement("div");
       item.className = "ritem";
       var nm = document.createElement("strong"); nm.textContent = p.n;
       var acts = document.createElement("div"); acts.className = "row";
-      var cBtn = document.createElement("button"); cBtn.type = "button"; cBtn.textContent = "Nachricht kopieren";
+      var cBtn = document.createElement("button"); cBtn.type = "button"; cBtn.textContent = "Kopieren";
       cBtn.addEventListener("click", function(){ copyText(text, cBtn); });
       var wa = document.createElement("a"); wa.className = "btn"; wa.textContent = "WhatsApp";
       wa.href = "https://wa.me/?text=" + encodeURIComponent(text); wa.target = "_blank"; wa.rel = "noopener";
       acts.appendChild(cBtn); acts.appendChild(wa);
+      if (p.em){
+        var ml = document.createElement("a"); ml.className = "btn"; ml.textContent = "E-Mail";
+        ml.href = "mailto:" + encodeURIComponent(p.em) + "?subject=" + encodeURIComponent(ev + ": " + p.n + ", dein Wichtel-Los") +
+                  "&body=" + encodeURIComponent(text);
+        acts.appendChild(ml);
+      }
       item.appendChild(nm); item.appendChild(acts);
       list.appendChild(item);
     });
@@ -283,15 +363,56 @@ button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cu
   });
 
   // ---------- Aufdecken ----------
+  var giftKey = "";
+  function loadGifts(){ try{ return JSON.parse(localStorage.getItem(giftKey)||"[]"); }catch(e){ return []; } }
+  function saveGifts(l){ try{ localStorage.setItem(giftKey, JSON.stringify(l)); }catch(e){} }
+  function renderGifts(){
+    var box = $("gList"); box.innerHTML = "";
+    loadGifts().forEach(function(it, i){
+      var row = document.createElement("div"); row.className = "inline"; row.style.alignItems = "center";
+      var lab = document.createElement("label"); lab.className = "check"; lab.style.flex = "1 1 auto";
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!it.d;
+      var sp = document.createElement("span"); sp.textContent = it.t; if (it.d) sp.style.textDecoration = "line-through";
+      cb.addEventListener("change", function(){ var l = loadGifts(); l[i].d = cb.checked; saveGifts(l); renderGifts(); });
+      lab.appendChild(cb); lab.appendChild(sp);
+      var x = document.createElement("button"); x.type = "button"; x.className = "del"; x.textContent = "✕"; x.setAttribute("aria-label","Entfernen");
+      x.addEventListener("click", function(){ var l = loadGifts(); l.splice(i,1); saveGifts(l); renderGifts(); });
+      row.appendChild(lab); row.appendChild(x); box.appendChild(row);
+    });
+  }
+  function addGift(){
+    var v = $("gIn").value.trim(); if (!v) return;
+    var l = loadGifts(); l.push({ t:v, d:false }); saveGifts(l); $("gIn").value = ""; renderGifts();
+  }
+  $("gAdd").addEventListener("click", addGift);
+  $("gIn").addEventListener("keydown", function(e){ if (e.key === "Enter"){ e.preventDefault(); addGift(); } });
+
   function showReveal(o){
+    var targets = Array.isArray(o.t) ? o.t : [o.t];
+    var wishes = Array.isArray(o.w) ? o.w : [];
     $("organizer").hidden = true; $("reveal").hidden = false;
     $("rEvent").textContent = o.e || "Wichteln";
     $("rHello").textContent = "Hallo " + o.g + "!";
-    $("rTarget").textContent = o.t;
+    $("rTarget").textContent = joinNames(targets);
+    var wb = $("rWishes"); wb.innerHTML = ""; var anyWish = false;
+    targets.forEach(function(name, i){
+      var ws = wishes[i] || [];
+      if (!ws.length) return;
+      anyWish = true;
+      if (targets.length > 1){ var h = document.createElement("p"); h.className = "hint"; h.style.fontWeight = "700"; h.textContent = name; wb.appendChild(h); }
+      var ul = document.createElement("ul"); ul.className = "wishes";
+      ws.forEach(function(w){ var li = document.createElement("li"); li.textContent = w; ul.appendChild(li); });
+      wb.appendChild(ul);
+    });
+    $("rWishBox").hidden = !anyWish;
     var f = $("rFacts"); f.innerHTML = "";
     if (o.b){ var s1 = document.createElement("span"); s1.innerHTML = "Budget: <b></b>"; s1.querySelector("b").textContent = o.b; f.appendChild(s1); }
     if (o.d){ var s2 = document.createElement("span"); s2.innerHTML = "Bescherung: <b></b>"; s2.querySelector("b").textContent = fmtDate(o.d); f.appendChild(s2); }
     $("rNote").textContent = o.m || "";
+    $("rInfo").textContent = "Nur du weißt, wen du gezogen hast. Um dein Geschenk kümmert sich jemand anderes.";
+    $("rAll").textContent = (o.a && o.a.length) ? "Dabei sind: " + joinNames(o.a) + "." : "";
+    giftKey = "wichtel-gifts-" + (o.e||"") + "-" + o.g;
+    renderGifts();
     $("rBox").hidden = true; $("rBtn").hidden = false; $("rLead").hidden = false;
     window.scrollTo(0,0);
   }
@@ -311,21 +432,22 @@ button,.btn{font:inherit;font-weight:600;border-radius:10px;padding:10px 14px;cu
     var st = load();
     if (st && st.people && st.people.length){
       $("evName").value = st.event||""; $("evBudget").value = st.budget||""; $("evDate").value = st.date||"";
-      $("evMsg").value = st.msg||"";
-      st.people.forEach(function(p){ addRow(p.n, p.gr); });
+      $("evCount").value = st.count||"1"; $("evMsg").value = st.msg||"";
+      st.people.forEach(function(p){ addRow(p); });
     } else {
       // Beispielrunde, zum Überschreiben
       $("evName").value = "Familienwichteln 2026";
       $("evBudget").value = "25 €";
       $("evDate").value = "2026-12-24";
-      [["Anna","A"],["Ben","A"],["Clara",""],["David","B"],["Emma","B"],["Felix",""]].forEach(function(p){ addRow(p[0], p[1]); });
+      [["Anna","1"],["Ben","1"],["Clara",""],["David","2"],["Emma","2"],["Felix",""]].forEach(function(p){ addRow({ n:p[0], gr:p[1] }); });
       var h = document.querySelector("#organizer .step");
       var ex = document.createElement("span"); ex.className = "ex"; ex.textContent = "Beispiel";
       h.appendChild(ex);
     }
   }
-  $("addBtn").addEventListener("click", function(){ var r = addRow("",""); r.children[0].focus(); save(); });
+  $("addBtn").addEventListener("click", function(){ var r = addRow(); r.querySelector("input").focus(); save(); });
   document.addEventListener("input", function(e){ if (e.target.closest && e.target.closest("#organizer")) save(); });
+  document.addEventListener("change", function(e){ if (e.target.closest && e.target.closest("#organizer")) save(); });
   window.addEventListener("hashchange", function(){ var o = dec(location.hash); if (o) showReveal(o); });
   boot();
 })();
